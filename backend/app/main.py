@@ -1,3 +1,4 @@
+import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.database import engine, Base
@@ -10,10 +11,14 @@ app = FastAPI(
     version="0.1.0",
 )
 
+# Parse frontend URLs from the environment variable (defaulting to localhost if not set)
+frontend_urls = os.getenv("FRONTEND_URLS", "http://localhost:5173,http://localhost:3000")
+origins = [url.strip() for url in frontend_urls.split(",") if url.strip()]
+
 # CORS middleware — allow the React frontend to talk to the backend
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://localhost:3000"],
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
