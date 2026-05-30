@@ -1,7 +1,15 @@
+from sqlalchemy import Column, Integer, String, Float, DateTime
+from datetime import datetime
 from app.database import Base
 
-# Import all models here so Alembic can detect them
-# Example: from app.models.expense import Expense
+class Expense(Base):
+    __tablename__ = "expenses"
 
-# This file serves as the central registry for all SQLAlchemy models.
-# As we add new models in later phases, we will import them here.
+    id = Column(Integer, primary_key=True, index=True)
+    telegram_user_id = Column(String(50), index=True)
+    raw_message = Column(String(500))
+    amount = Column(Float, nullable=True)
+    category = Column(String(100), nullable=True)
+    description = Column(String(255), nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+

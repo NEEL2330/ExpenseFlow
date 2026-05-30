@@ -3,6 +3,8 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.database import engine, Base
 
+from app.routers import webhook
+
 # Create all tables automatically on startup (since we removed Alembic)
 Base.metadata.create_all(bind=engine)
 app = FastAPI(
@@ -10,6 +12,9 @@ app = FastAPI(
     description="AI-powered conversational expense tracker",
     version="0.1.0",
 )
+
+# Include routers
+app.include_router(webhook.router)
 
 # Parse frontend URLs from the environment variable (defaulting to localhost if not set)
 frontend_urls = os.getenv("FRONTEND_URLS", "http://localhost:5173,http://localhost:3000")
