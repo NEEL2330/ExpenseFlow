@@ -1,26 +1,204 @@
+import json
+from datetime import datetime, timedelta
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
+from sqlalchemy import distinct
+
 from app.database import get_db
 from app.schemas import N8nWebhookPayload
-from app.models import Expense
+from app.models import Expense, PendingExpense
+from app.parser import parse_expense
 
-router = APIRouter(
-    prefix="/api/webhooks",
-    tags=["webhooks"]
-)
+router = APIRouter(prefix="/api/webhooks", tags=["webhooks"])
+
+PENDING_EXPIRY_MINUTES = 5
+
+
+# ---------------------------------------------------------------------------
+# Helpers
+# ---------------------------------------------------------------------------
+
+def _build_success_reply(amount, category, payment_mode, confidence, is_new_category=False) -> str:
+    parts = ["✅ Expense logged!"]
+    if amount is not None:
+        parts.append(f"💰 Amount: {amount}")
+    cat_label = f"{category} ✨ (new)" if is_new_category else category
+    if category:
+        parts.append(f"📂 Category: {cat_label}")
+    if payment_mode:
+        parts.append(f"💳 Mode: {payment_mode}")
+    parts.append(f"📊 Confidence: {confidence}%")
+    return "\n".join(parts)
+
+
+def _save_expense(db: Session, telegram_user_id: str, raw_message: str,
+                  amount, category, payment_mode) -> Expense:
+    expense = Expense(
+        telegram_user_id=telegram_user_id,
+        raw_message=raw_message,
+        amount=amount,
+        category=category,
+        payment_mode=payment_mode,
+    )
+    db.add(expense)
+    db.commit()
+    db.refresh(expense)
+    return expense
+
+
+def _get_user_categories(db: Session, telegram_user_id: str) -> list[str]:
+    rows = (
+        db.query(distinct(Expense.category))
+        .filter(
+            Expense.telegram_user_id == telegram_user_id,
+            Expense.category.isnot(None),
+        )
+        .all()
+    )
+    return [r[0] for r in rows]
+
+
+def _get_active_pending(db: Session, telegram_user_id: str):
+    """Return the user's pending expense if it still exists and hasn't expired."""
+    pending = (
+        db.query(PendingExpense)
+        .filter(PendingExpense.telegram_user_id == telegram_user_id)
+        .order_by(PendingExpense.created_at.desc())
+        .first()
+    )
+    if pending is None:
+        return None
+    # Check 5-minute expiry
+    if datetime.utcnow() > pending.expires_at:
+        db.delete(pending)
+        db.commit()
+        return None
+    return pending
+
+
+# ---------------------------------------------------------------------------
+# Main endpoint
+# ---------------------------------------------------------------------------
 
 @router.post("/n8n")
 def receive_n8n_webhook(payload: N8nWebhookPayload, db: Session = Depends(get_db)):
-    # Create a new Expense record with the raw message
-    new_expense = Expense(
-        telegram_user_id=payload.telegram_user_id,
-        raw_message=payload.message_text
-    )
-    db.add(new_expense)
-    db.commit()
-    db.refresh(new_expense)
+    user_id = str(payload.telegram_user_id)
+    text    = payload.message_text.strip()
 
-    # Return the reply that n8n will send back to the user
-    reply_text = f"Received your message: '{payload.message_text}'. It has been logged in the database!"
-    
-    return {"reply": reply_text}
+    # ── STEP A: Check if this user has a pending expense waiting for input ──
+    pending = _get_active_pending(db, user_id)
+
+    if pending is not None:
+
+        # ── STATE 1: Bot showed the numbered list; user replies with number / 'new' ──
+        if pending.state == "AWAITING_CHOICE":
+            options: list[str] = json.loads(pending.options or "[]")
+
+            if text.lower() == "new":
+                # User wants a brand new category — ask for its name
+                pending.state = "AWAITING_CATEGORY_NAME"
+                db.commit()
+                return {"reply": "What would you like to name this new category?"}
+
+            elif text.isdigit():
+                choice = int(text)
+                if 1 <= choice <= len(options):
+                    chosen_category = options[choice - 1]
+                    # Compute confidence for the final receipt
+                    detected = sum([pending.amount is not None,
+                                    pending.payment_mode is not None,
+                                    True])  # category is now confirmed
+                    confidence = round((detected / 3) * 100)
+                    _save_expense(db, user_id, pending.raw_message,
+                                  pending.amount, chosen_category,
+                                  pending.payment_mode)
+                    db.delete(pending)
+                    db.commit()
+                    return {
+                        "reply": _build_success_reply(
+                            pending.amount, chosen_category, pending.payment_mode,
+                            confidence
+                        )
+                    }
+                else:
+                    return {
+                        "reply": (
+                            f"⚠️ Please reply with a number between 1 and {len(options)}, "
+                            f"or reply 'new' to create a new category."
+                        )
+                    }
+            else:
+                return {
+                    "reply": (
+                        "⚠️ I didn't understand that. Reply with a number from the list above, "
+                        "or reply 'new' to create a new category."
+                    )
+                }
+
+        # ── STATE 2: User asked for new category; now they type the name ──
+        elif pending.state == "AWAITING_CATEGORY_NAME":
+            new_category = text.strip().capitalize()
+            if not new_category:
+                return {"reply": "Please type a valid category name."}
+
+            detected = sum([pending.amount is not None,
+                            pending.payment_mode is not None,
+                            True])
+            confidence = round((detected / 3) * 100)
+            _save_expense(db, user_id, pending.raw_message,
+                          pending.amount, new_category,
+                          pending.payment_mode)
+            db.delete(pending)
+            db.commit()
+            return {
+                "reply": _build_success_reply(
+                    pending.amount, new_category, pending.payment_mode,
+                    confidence, is_new_category=True
+                )
+            }
+
+    # ── STEP B: No pending state — parse as a fresh expense ──
+    user_categories = _get_user_categories(db, user_id)
+    parsed = parse_expense(text, user_categories)
+
+    # ── Needs clarification: category couldn't be matched confidently ──
+    if parsed["needs_clarification"]:
+        # Build the numbered list of ALL user categories
+        options = user_categories  # show all existing categories
+        numbered = "\n".join(f"{i+1}️⃣ {cat}" for i, cat in enumerate(options))
+
+        # Save pending record
+        pending_record = PendingExpense(
+            telegram_user_id=user_id,
+            raw_message=text,
+            amount=parsed["amount"],
+            payment_mode=parsed["payment_mode"],
+            description=parsed["description"],
+            options=json.dumps(options),
+            state="AWAITING_CHOICE",
+            expires_at=datetime.utcnow() + timedelta(minutes=PENDING_EXPIRY_MINUTES),
+        )
+        db.add(pending_record)
+        db.commit()
+
+        return {
+            "reply": (
+                f"⚠️ Couldn't match '{parsed['raw_category_word']}' to any of your categories.\n\n"
+                f"Your existing categories:\n{numbered}\n\n"
+                f"Reply with a number to use an existing category,\n"
+                f"or reply 'new' to create a new one.\n\n"
+                f"_(This request expires in {PENDING_EXPIRY_MINUTES} minutes)_"
+            )
+        }
+
+    # ── Category was resolved (auto-matched or first-time user) — save directly ──
+    _save_expense(db, user_id, text,
+                  parsed["amount"], parsed["category"],
+                  parsed["payment_mode"])
+
+    return {
+        "reply": _build_success_reply(
+            parsed["amount"], parsed["category"], parsed["payment_mode"],
+            parsed["confidence"]
+        )
+    }
