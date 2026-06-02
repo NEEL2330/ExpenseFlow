@@ -1,20 +1,35 @@
-from sqlalchemy import Column, Integer, String, Float, DateTime, Text
+from sqlalchemy import Column, Integer, String, Float, DateTime, Text, Boolean, ForeignKey
+from sqlalchemy.orm import relationship
 from datetime import datetime
 from app.database import Base
 
 
-class Expense(Base):
-    __tablename__ = "expenses"
+class User(Base):
+    __tablename__ = "users"
 
-    id               = Column(Integer, primary_key=True, index=True)
-    telegram_user_id = Column(String(50), index=True)
-    raw_message      = Column(String(500))
+    id          = Column(Integer, primary_key=True, index=True)
+    telegram_id = Column(String(50), unique=True, index=True)
+    name        = Column(String(100), nullable=True)
+    created_at  = Column(DateTime, default=datetime.utcnow)
+
+    transactions = relationship("Transaction", back_populates="user")
+
+
+class Transaction(Base):
+    __tablename__ = "transactions"
+
+    id          = Column(Integer, primary_key=True, index=True)
+    user_id     = Column(Integer, ForeignKey("users.id"), index=True)
+    raw_message = Column(String(500))
     amount           = Column(Float, nullable=True)
     category         = Column(String(100), nullable=True)
     payment_mode     = Column(String(50), nullable=True)
     description      = Column(String(255), nullable=True)
+    verified         = Column(Boolean, default=False)
     created_at       = Column(DateTime, default=datetime.utcnow)
+    updated_at       = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
+    user = relationship("User", back_populates="transactions")
 
 class PendingExpense(Base):
     """

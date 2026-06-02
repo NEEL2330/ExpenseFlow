@@ -6,7 +6,7 @@ from sqlalchemy import distinct
 
 from app.database import get_db
 from app.schemas import N8nWebhookPayload
-from app.models import Expense, PendingExpense
+from app.models import Transaction, PendingExpense, User
 from app.parser import parse_expense
 
 router = APIRouter(prefix="/api/webhooks", tags=["webhooks"])
@@ -31,14 +31,31 @@ def _build_success_reply(amount, category, payment_mode, confidence, is_new_cate
     return "\n".join(parts)
 
 
-def _save_expense(db: Session, telegram_user_id: str, raw_message: str,
-                  amount, category, payment_mode) -> Expense:
-    expense = Expense(
-        telegram_user_id=telegram_user_id,
+def _get_or_create_user(db: Session, telegram_id: str, username: str = None) -> User:
+    user = db.query(User).filter(User.telegram_id == telegram_id).first()
+    if not user:
+        # First time this Telegram user is seen — create a record
+        user = User(telegram_id=telegram_id, name=username)
+        db.add(user)
+        db.commit()
+        db.refresh(user)
+    elif username and not user.name:
+        # User exists but name was NULL — backfill it now
+        user.name = username
+        db.commit()
+    return user
+
+
+def _save_expense(db: Session, user: User, raw_message: str,
+                  amount, category, payment_mode) -> Transaction:
+    """Create a Transaction row linked via user_id FK only."""
+    expense = Transaction(
+        user_id=user.id,
         raw_message=raw_message,
         amount=amount,
         category=category,
         payment_mode=payment_mode,
+        verified=True if amount and category and payment_mode else False
     )
     db.add(expense)
     db.commit()
@@ -46,12 +63,13 @@ def _save_expense(db: Session, telegram_user_id: str, raw_message: str,
     return expense
 
 
-def _get_user_categories(db: Session, telegram_user_id: str) -> list[str]:
+def _get_user_categories(db: Session, user: User) -> list[str]:
+    """Fetch distinct categories for this user via user_id FK — no telegram_user_id scan."""
     rows = (
-        db.query(distinct(Expense.category))
+        db.query(distinct(Transaction.category))
         .filter(
-            Expense.telegram_user_id == telegram_user_id,
-            Expense.category.isnot(None),
+            Transaction.user_id == user.id,
+            Transaction.category.isnot(None),
         )
         .all()
     )
@@ -82,11 +100,17 @@ def _get_active_pending(db: Session, telegram_user_id: str):
 
 @router.post("/n8n")
 def receive_n8n_webhook(payload: N8nWebhookPayload, db: Session = Depends(get_db)):
-    user_id = str(payload.telegram_user_id)
-    text    = payload.message_text.strip()
+    telegram_id = str(payload.telegram_user_id)
+    text        = payload.message_text.strip()
+
+    # Prefer first_name (always set by Telegram); fall back to @username handle
+    display_name = payload.first_name or payload.username
+
+    # ── Upsert user FIRST — single source of truth for identity ──
+    user = _get_or_create_user(db, telegram_id, display_name)
 
     # ── STEP A: Check if this user has a pending expense waiting for input ──
-    pending = _get_active_pending(db, user_id)
+    pending = _get_active_pending(db, telegram_id)
 
     if pending is not None:
 
@@ -109,7 +133,7 @@ def receive_n8n_webhook(payload: N8nWebhookPayload, db: Session = Depends(get_db
                                     pending.payment_mode is not None,
                                     True])  # category is now confirmed
                     confidence = round((detected / 3) * 100)
-                    _save_expense(db, user_id, pending.raw_message,
+                    _save_expense(db, user, pending.raw_message,
                                   pending.amount, chosen_category,
                                   pending.payment_mode)
                     db.delete(pending)
@@ -145,7 +169,7 @@ def receive_n8n_webhook(payload: N8nWebhookPayload, db: Session = Depends(get_db
                             pending.payment_mode is not None,
                             True])
             confidence = round((detected / 3) * 100)
-            _save_expense(db, user_id, pending.raw_message,
+            _save_expense(db, user, pending.raw_message,
                           pending.amount, new_category,
                           pending.payment_mode)
             db.delete(pending)
@@ -158,7 +182,7 @@ def receive_n8n_webhook(payload: N8nWebhookPayload, db: Session = Depends(get_db
             }
 
     # ── STEP B: No pending state — parse as a fresh expense ──
-    user_categories = _get_user_categories(db, user_id)
+    user_categories = _get_user_categories(db, user)
     parsed = parse_expense(text, user_categories)
 
     # ── Needs clarification: category couldn't be matched confidently ──
@@ -192,7 +216,7 @@ def receive_n8n_webhook(payload: N8nWebhookPayload, db: Session = Depends(get_db
         }
 
     # ── Category was resolved (auto-matched or first-time user) — save directly ──
-    _save_expense(db, user_id, text,
+    _save_expense(db, user, text,
                   parsed["amount"], parsed["category"],
                   parsed["payment_mode"])
 
