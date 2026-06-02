@@ -40,6 +40,10 @@
               "value": "={{ $json.message.from.username }}"
             },
             {
+              "name": "first_name",
+              "value": "={{ $json.message.from.first_name }}"
+            },
+            {
               "name": "message_text",
               "value": "={{ $json.message.text }}"
             },
