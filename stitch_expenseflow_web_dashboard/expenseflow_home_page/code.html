@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>ExpenseFlow - Master Your Finances</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-background": "#191c1e",
+                        "surface-container-highest": "#e0e3e5",
+                        "secondary-fixed": "#dbe1ff",
+                        "secondary-container": "#316bf3",
+                        "primary-container": "#131b2e",
+                        "on-secondary": "#ffffff",
+                        "on-secondary-fixed-variant": "#003ea8",
+                        "error": "#ba1a1a",
+                        "on-tertiary": "#ffffff",
+                        "on-primary-fixed-variant": "#3f465c",
+                        "on-primary": "#ffffff",
+                        "on-surface-variant": "#45464d",
+                        "surface-container-low": "#f2f4f6",
+                        "tertiary-fixed": "#6ffbbe",
+                        "secondary-fixed-dim": "#b4c5ff",
+                        "secondary": "#0051d5",
+                        "on-error": "#ffffff",
+                        "tertiary-fixed-dim": "#4edea3",
+                        "surface": "#f7f9fb",
+                        "on-tertiary-fixed-variant": "#005236",
+                        "inverse-surface": "#2d3133",
+                        "on-surface": "#191c1e",
+                        "surface-container-lowest": "#ffffff",
+                        "on-primary-container": "#7c839b",
+                        "inverse-on-surface": "#eff1f3",
+                        "tertiary": "#000000",
+                        "background": "#f7f9fb",
+                        "surface-container": "#eceef0",
+                        "on-primary-fixed": "#131b2e",
+                        "primary": "#000000",
+                        "surface-container-high": "#e6e8ea",
+                        "on-tertiary-container": "#009668",
+                        "on-secondary-fixed": "#00174b",
+                        "primary-fixed-dim": "#bec6e0",
+                        "surface-tint": "#565e74",
+                        "surface-variant": "#e0e3e5",
+                        "surface-bright": "#f7f9fb",
+                        "on-tertiary-fixed": "#002113",
+                        "on-secondary-container": "#fefcff",
+                        "error-container": "#ffdad6",
+                        "surface-dim": "#d8dadc",
+                        "outline": "#76777d",
+                        "on-error-container": "#93000a",
+                        "inverse-primary": "#bec6e0",
+                        "tertiary-container": "#002113",
+                        "primary-fixed": "#dae2fd",
+                        "outline-variant": "#c6c6cd"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "md": "16px",
+                        "base": "4px",
+                        "sm": "8px",
+                        "gutter": "24px",
+                        "margin-desktop": "40px",
+                        "lg": "24px",
+                        "xs": "4px",
+                        "xl": "32px",
+                        "margin-mobile": "16px"
+                    },
+                    "fontFamily": {
+                        "body-sm": ["Inter"],
+                        "headline-lg-mobile": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "display-lg": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "data-mono": ["JetBrains Mono"],
+                        "label-caps": ["Inter"],
+                        "body-md": ["Inter"]
+                    },
+                    "fontSize": {
+                        "body-sm": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "headline-lg-mobile": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "display-lg": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                        "data-mono": ["14px", { "lineHeight": "20px", "fontWeight": "500" }],
+                        "label-caps": ["12px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        [data-weight="fill"] {
+            font-variation-settings: 'FILL' 1;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md antialiased min-h-screen flex flex-col">
+<!-- TopNavBar -->
+<header class="bg-surface dark:bg-on-background border-b border-surface-container-highest dark:border-outline-variant sticky top-0 z-50 w-full">
+<div class="flex justify-between items-center w-full px-margin-mobile md:px-margin-desktop py-md max-w-7xl mx-auto">
+<div class="flex items-center gap-sm">
+<img alt="ExpenseFlow Logo" class="h-8 w-auto" src="https://lh3.googleusercontent.com/aida/AP1WRLtrqFXKiLviBtuR3rtTaIZ0t0Okwsu7S2KvWkrdu23r913wvxMwroHo2eBIpkxv94_vXS2zM3_kNMCJ4plIVftGimbht1qf7BV8d5oKeH4GZsPUEJS8IW6pWeMxwKqpsG4V8LEH7F2s_yQveyJvkRivmXNFKRqpNQOFtuX1rk0iYjDA61TSikrbWkflT4LlU2AcpIAIz0W-dkXBSkCgxayeeNZGflLEclxEzmyoFZDFoou-WfPuTOkz0Oo"/>
+<span class="font-headline-md text-headline-md font-bold text-primary dark:text-primary-fixed">ExpenseFlow</span>
+</div>
+<nav class="hidden md:flex gap-gutter items-center">
+<a class="text-on-surface-variant dark:text-surface-variant hover:text-secondary font-body-sm text-body-sm transition-colors duration-200" href="#features">Features</a>
+<a class="text-on-surface-variant dark:text-surface-variant hover:text-secondary font-body-sm text-body-sm transition-colors duration-200" href="#how-it-works">How it Works</a>
+<a class="text-on-surface-variant dark:text-surface-variant hover:text-secondary font-body-sm text-body-sm transition-colors duration-200" href="#pricing">Pricing</a>
+</nav>
+<div class="flex items-center gap-md">
+<button class="hidden md:block text-secondary dark:text-secondary-fixed font-body-sm text-body-sm font-medium hover:bg-surface-container-low dark:hover:bg-primary-container px-4 py-2 rounded-lg transition-colors duration-200 scale-95 active:opacity-80">Login</button>
+<button class="bg-secondary text-on-secondary font-body-sm text-body-sm font-semibold px-4 py-2 rounded-lg shadow-sm hover:bg-secondary-container transition-colors duration-200 scale-95 active:opacity-80">Get Started</button>
+</div>
+</div>
+</header>
+<!-- Main Content -->
+<main class="flex-grow">
+<!-- Hero Section -->
+<section class="px-margin-mobile md:px-margin-desktop py-xl md:py-[80px] max-w-7xl mx-auto flex flex-col md:flex-row items-center gap-xl">
+<div class="flex-1 space-y-lg text-center md:text-left">
+<h1 class="font-display-lg text-display-lg text-primary tracking-tight leading-tight">Master Your Finances with AI-Powered Simplicity.</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-2xl mx-auto md:mx-0">Seamlessly track expenses via Telegram and unlock deep financial insights on the web. Professional-grade tracking, simplified for everyone.</p>
+<div class="flex flex-col sm:flex-row gap-md justify-center md:justify-start pt-sm">
+<button class="bg-secondary text-on-secondary font-body-md text-body-md font-semibold px-6 py-3 rounded-lg shadow-md hover:bg-secondary-container transition-all scale-95 active:opacity-80">Get Started for Free</button>
+<button class="bg-transparent border border-outline text-secondary font-body-md text-body-md font-medium px-6 py-3 rounded-lg hover:bg-surface-container-low transition-all scale-95 active:opacity-80">How it Works</button>
+</div>
+</div>
+<div class="flex-1 w-full relative">
+<div class="absolute inset-0 bg-secondary/5 rounded-[32px] blur-3xl -z-10"></div>
+<img alt="ExpenseFlow App Mockup" class="w-full h-auto rounded-xl shadow-2xl border border-surface-container-highest" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD-7NNvFhCHZleaVsnZRa0NDKPM1wGVmgHBF8CWR4LuZkNuRz77-HVpa95ya4ip5qh3Bul84BB-feEmEBmaNNBCXvVT_tinG-UkENish0xIcDRnBedkYvDnBirUpqgTK_Z62hRcfIpFQNI4MUQ8haOjo74MzTPK4TpLiEAm42UOo8zc6kErONEMvGHTPbJQAUlMhEGzY3kOAKSdTNd76i2hzs8ZXjd099RUv4YffsmWrM0uLnjdUl8KfI0dgUffbynLuJ6a-qKaH_w"/>
+</div>
+</section>
+<!-- Features Section (Bento Grid) -->
+<section class="bg-surface-container-low py-[80px]" id="features">
+<div class="px-margin-mobile md:px-margin-desktop max-w-7xl mx-auto">
+<div class="text-center mb-xl">
+<h2 class="font-headline-lg text-headline-lg text-primary mb-sm">Professional Tools, Effortless Experience</h2>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-2xl mx-auto">Everything you need to stay on top of your financial health, engineered for clarity and speed.</p>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-md">
+<!-- Feature 1 -->
+<div class="bg-surface p-lg rounded-xl border border-surface-container-highest shadow-sm hover:shadow-md transition-shadow">
+<div class="w-12 h-12 rounded-full bg-secondary-fixed flex items-center justify-center mb-md">
+<span class="material-symbols-outlined text-secondary" data-icon="send">send</span>
+</div>
+<h3 class="font-headline-md text-headline-md text-primary mb-xs">Track Anywhere</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Send a message on Telegram, and we'll handle the rest. No need to open another app just to log a coffee.</p>
+</div>
+<!-- Feature 2 -->
+<div class="bg-surface p-lg rounded-xl border border-surface-container-highest shadow-sm hover:shadow-md transition-shadow md:col-span-2">
+<div class="flex justify-between items-start mb-md">
+<div class="w-12 h-12 rounded-full bg-tertiary-fixed flex items-center justify-center">
+<span class="material-symbols-outlined text-tertiary" data-icon="smart_toy">smart_toy</span>
+</div>
+</div>
+<h3 class="font-headline-md text-headline-md text-primary mb-xs">AI Intelligence</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant max-w-md">Automatic categorization and keyword-based parsing. Our AI understands context, turning casual messages into structured data.</p>
+</div>
+<!-- Feature 3 -->
+<div class="bg-surface p-lg rounded-xl border border-surface-container-highest shadow-sm hover:shadow-md transition-shadow md:col-span-2 relative overflow-hidden group">
+<div class="relative z-10">
+<div class="w-12 h-12 rounded-full bg-primary-fixed flex items-center justify-center mb-md">
+<span class="material-symbols-outlined text-primary" data-icon="analytics">analytics</span>
+</div>
+<h3 class="font-headline-md text-headline-md text-primary mb-xs">Deep Analytics</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant max-w-sm">Professional reports and spending trends. Gain clarity with interactive charts and custom date ranges.</p>
+</div>
+<div class="absolute right-0 top-0 bottom-0 w-1/2 opacity-20 group-hover:opacity-40 transition-opacity flex items-center justify-end pr-md">
+<img alt="Analytics Dashboard Thumbnail" class="h-[80%] rounded-lg shadow-sm border border-outline-variant object-cover object-left transform translate-x-4" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB1ZC-v5fc306uIrQAWFBzwXvYgNFauM0SwlApqPnzN_PXDvNqEGTeYnpjBqn-KkXaItmh5sKKjTEM8_95IlBMf2y6hv6F0dRzuPMVIMGFI9Bcqq8aBfpwfBVVr2cNo-c6gFJZ368aX3UTXGToUeFeR4IrR27Sevvq6Xj69tsIlIecC_0882IbfF5_ouSR8ZaGAA62yfI-IYRH2R9hMnUxMNKo3diOf4TMB28ElsZ8RZmKAy9ykaYun7GueVH4OUEKSD1WR7Z6PKUs"/>
+</div>
+</div>
+<!-- Feature 4 -->
+<div class="bg-surface p-lg rounded-xl border border-surface-container-highest shadow-sm hover:shadow-md transition-shadow">
+<div class="w-12 h-12 rounded-full bg-error-container flex items-center justify-center mb-md">
+<span class="material-symbols-outlined text-error" data-icon="shield">shield</span>
+</div>
+<h3 class="font-headline-md text-headline-md text-primary mb-xs">Secure &amp; Private</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Bank-grade security for your financial data. Your information is encrypted and never shared.</p>
+</div>
+</div>
+</div>
+</section>
+<!-- How it Works Section -->
+<section class="px-margin-mobile md:px-margin-desktop py-[80px] max-w-7xl mx-auto" id="how-it-works">
+<div class="text-center mb-xl">
+<h2 class="font-headline-lg text-headline-lg text-primary mb-sm">How it Works</h2>
+<p class="font-body-md text-body-md text-on-surface-variant">Three simple steps to financial clarity.</p>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-lg relative">
+<!-- Decorative Line -->
+<div class="hidden md:block absolute top-1/2 left-0 right-0 h-0.5 bg-surface-container-high -translate-y-1/2 z-0"></div>
+<!-- Step 1 -->
+<div class="relative z-10 flex flex-col items-center text-center bg-background">
+<div class="w-16 h-16 rounded-full bg-secondary text-on-secondary flex items-center justify-center font-headline-md mb-md shadow-lg border-4 border-background">1</div>
+<h4 class="font-headline-md text-headline-md text-primary mb-xs">Connect</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Link your Telegram account securely in seconds.</p>
+</div>
+<!-- Step 2 -->
+<div class="relative z-10 flex flex-col items-center text-center bg-background">
+<div class="w-16 h-16 rounded-full bg-secondary text-on-secondary flex items-center justify-center font-headline-md mb-md shadow-lg border-4 border-background">2</div>
+<h4 class="font-headline-md text-headline-md text-primary mb-xs">Message</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Just type your expenses naturally (e.g., "Coffee $5").</p>
+</div>
+<!-- Step 3 -->
+<div class="relative z-10 flex flex-col items-center text-center bg-background">
+<div class="w-16 h-16 rounded-full bg-secondary text-on-secondary flex items-center justify-center font-headline-md mb-md shadow-lg border-4 border-background">3</div>
+<h4 class="font-headline-md text-headline-md text-primary mb-xs">Review</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant">View instant categorization and insightful reports.</p>
+</div>
+</div>
+</section>
+</main>
+<!-- Footer -->
+<footer class="bg-surface-container-lowest dark:bg-on-background border-t border-surface-container-highest dark:border-outline-variant mt-auto">
+<div class="grid grid-cols-1 md:grid-cols-4 gap-gutter px-margin-mobile md:px-margin-desktop py-xl max-w-7xl mx-auto">
+<div class="col-span-1 md:col-span-2 space-y-md">
+<div class="flex items-center gap-sm">
+<img alt="ExpenseFlow Logo" class="h-6 w-auto grayscale opacity-70" src="https://lh3.googleusercontent.com/aida/AP1WRLtrqFXKiLviBtuR3rtTaIZ0t0Okwsu7S2KvWkrdu23r913wvxMwroHo2eBIpkxv94_vXS2zM3_kNMCJ4plIVftGimbht1qf7BV8d5oKeH4GZsPUEJS8IW6pWeMxwKqpsG4V8LEH7F2s_yQveyJvkRivmXNFKRqpNQOFtuX1rk0iYjDA61TSikrbWkflT4LlU2AcpIAIz0W-dkXBSkCgxayeeNZGflLEclxEzmyoFZDFoou-WfPuTOkz0Oo"/>
+<span class="font-headline-md text-headline-md font-bold text-primary dark:text-primary-fixed">ExpenseFlow</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant opacity-90 hover:opacity-100 transition-opacity">© 2024 ExpenseFlow Inc. All rights reserved.</p>
+</div>
+<div class="space-y-sm">
+<a class="block font-body-sm text-body-sm text-on-surface-variant dark:text-surface-variant hover:text-primary hover:underline transition-all" href="#">Product</a>
+<a class="block font-body-sm text-body-sm text-on-surface-variant dark:text-surface-variant hover:text-primary hover:underline transition-all" href="#">Features</a>
+<a class="block font-body-sm text-body-sm text-on-surface-variant dark:text-surface-variant hover:text-primary hover:underline transition-all" href="#">Pricing</a>
+</div>
+<div class="space-y-sm">
+<a class="block font-body-sm text-body-sm text-on-surface-variant dark:text-surface-variant hover:text-primary hover:underline transition-all" href="#">Security</a>
+<a class="block font-body-sm text-body-sm text-on-surface-variant dark:text-surface-variant hover:text-primary hover:underline transition-all" href="#">Privacy Policy</a>
+<a class="block font-body-sm text-body-sm text-on-surface-variant dark:text-surface-variant hover:text-primary hover:underline transition-all" href="#">Terms of Service</a>
+</div>
+</div>
+</footer>
+</body></html>

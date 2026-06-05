@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>ExpenseFlow - Add Expense</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "tertiary-fixed-dim": "#4edea3",
+                      "primary-fixed": "#dae2fd",
+                      "inverse-on-surface": "#eff1f3",
+                      "on-primary-container": "#7c839b",
+                      "on-background": "#191c1e",
+                      "surface-tint": "#565e74",
+                      "outline": "#76777d",
+                      "on-primary": "#ffffff",
+                      "on-tertiary-container": "#009668",
+                      "tertiary-fixed": "#6ffbbe",
+                      "surface-container": "#eceef0",
+                      "surface-container-lowest": "#ffffff",
+                      "inverse-surface": "#2d3133",
+                      "outline-variant": "#c6c6cd",
+                      "on-secondary": "#ffffff",
+                      "surface-container-high": "#e6e8ea",
+                      "error": "#ba1a1a",
+                      "secondary-fixed": "#dbe1ff",
+                      "surface-variant": "#e0e3e5",
+                      "surface-bright": "#f7f9fb",
+                      "on-tertiary-fixed": "#002113",
+                      "on-secondary-fixed-variant": "#003ea8",
+                      "on-tertiary": "#ffffff",
+                      "on-error-container": "#93000a",
+                      "surface": "#f7f9fb",
+                      "background": "#f7f9fb",
+                      "inverse-primary": "#bec6e0",
+                      "surface-container-highest": "#e0e3e5",
+                      "on-surface-variant": "#45464d",
+                      "secondary-container": "#316bf3",
+                      "on-secondary-container": "#fefcff",
+                      "surface-dim": "#d8dadc",
+                      "tertiary-container": "#002113",
+                      "primary-container": "#131b2e",
+                      "on-tertiary-fixed-variant": "#005236",
+                      "secondary-fixed-dim": "#b4c5ff",
+                      "error-container": "#ffdad6",
+                      "on-secondary-fixed": "#00174b",
+                      "on-error": "#ffffff",
+                      "surface-container-low": "#f2f4f6",
+                      "on-surface": "#191c1e",
+                      "primary-fixed-dim": "#bec6e0",
+                      "on-primary-fixed": "#131b2e",
+                      "tertiary": "#000000",
+                      "secondary": "#0051d5",
+                      "primary": "#000000",
+                      "on-primary-fixed-variant": "#3f465c"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "base": "4px",
+                      "sm": "8px",
+                      "xl": "32px",
+                      "lg": "24px",
+                      "xs": "4px",
+                      "md": "16px",
+                      "margin-desktop": "40px",
+                      "gutter": "24px",
+                      "margin-mobile": "16px"
+              },
+              "fontFamily": {
+                      "label-caps": ["Inter"],
+                      "headline-lg": ["Inter"],
+                      "display-lg": ["Inter"],
+                      "headline-lg-mobile": ["Inter"],
+                      "body-sm": ["Inter"],
+                      "headline-md": ["Inter"],
+                      "body-md": ["Inter"],
+                      "data-mono": ["JetBrains Mono"],
+                      "body-lg": ["Inter"]
+              },
+              "fontSize": {
+                      "label-caps": ["12px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700" }],
+                      "headline-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                      "display-lg": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                      "headline-lg-mobile": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                      "body-sm": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                      "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                      "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                      "data-mono": ["14px", { "lineHeight": "20px", "fontWeight": "500" }],
+                      "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }]
+              }
+            }
+          }
+        }
+    </script>
+<style>
+        .ambient-shadow {
+            box-shadow: 0px 4px 12px rgba(15, 23, 42, 0.04);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md h-screen w-full flex overflow-hidden selection:bg-secondary-fixed selection:text-on-secondary-fixed">
+<!-- SideNavBar (Shared Component) -->
+<aside class="hidden md:flex flex-col bg-surface-container-lowest border-r border-outline-variant fixed left-0 top-0 h-full w-[280px] z-40 py-lg space-y-sm">
+<!-- Header -->
+<div class="px-lg mb-xl flex items-center gap-sm">
+<div class="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center text-on-secondary font-bold">
+<span class="material-symbols-outlined text-[20px]" data-icon="account_balance">account_balance</span>
+</div>
+<div>
+<div class="font-headline-md text-headline-md font-bold text-secondary">ExpenseFlow</div>
+<div class="font-label-caps text-label-caps text-on-surface-variant opacity-70">Management Pro</div>
+</div>
+</div>
+<!-- Navigation Links -->
+<nav class="flex-1 flex flex-col space-y-base">
+<a class="flex items-center gap-md text-on-surface-variant px-lg py-md hover:bg-surface-container-high transition-all duration-200 group" href="#">
+<span class="material-symbols-outlined group-hover:text-primary transition-colors" data-icon="dashboard">dashboard</span>
+<span class="font-body-sm text-body-sm font-medium group-hover:text-primary transition-colors">Dashboard</span>
+</a>
+<a class="flex items-center gap-md text-on-surface-variant px-lg py-md hover:bg-surface-container-high transition-all duration-200 group" href="#">
+<span class="material-symbols-outlined group-hover:text-primary transition-colors" data-icon="receipt_long">receipt_long</span>
+<span class="font-body-sm text-body-sm font-medium group-hover:text-primary transition-colors">Transactions</span>
+</a>
+<!-- Active State Navigation -->
+<a class="flex items-center gap-md bg-secondary-fixed/20 text-secondary border-l-4 border-secondary px-lg py-md active:translate-x-1 duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="add_circle" data-weight="fill" style="font-variation-settings: 'FILL' 1;">add_circle</span>
+<span class="font-body-sm text-body-sm font-medium">Add Expense</span>
+</a>
+<a class="flex items-center gap-md text-on-surface-variant px-lg py-md hover:bg-surface-container-high transition-all duration-200 group" href="#">
+<span class="material-symbols-outlined group-hover:text-primary transition-colors" data-icon="analytics">analytics</span>
+<span class="font-body-sm text-body-sm font-medium group-hover:text-primary transition-colors">Reports</span>
+</a>
+<a class="flex items-center gap-md text-on-surface-variant px-lg py-md hover:bg-surface-container-high transition-all duration-200 group" href="#">
+<span class="material-symbols-outlined group-hover:text-primary transition-colors" data-icon="category">category</span>
+<span class="font-body-sm text-body-sm font-medium group-hover:text-primary transition-colors">Categories</span>
+</a>
+<div class="mt-auto pt-lg">
+<a class="flex items-center gap-md text-on-surface-variant px-lg py-md hover:bg-surface-container-high transition-all duration-200 group" href="#">
+<span class="material-symbols-outlined group-hover:text-primary transition-colors" data-icon="person">person</span>
+<span class="font-body-sm text-body-sm font-medium group-hover:text-primary transition-colors">Profile</span>
+</a>
+<a class="flex items-center gap-md text-on-surface-variant px-lg py-md hover:bg-surface-container-high transition-all duration-200 group" href="#">
+<span class="material-symbols-outlined group-hover:text-primary transition-colors" data-icon="settings">settings</span>
+<span class="font-body-sm text-body-sm font-medium group-hover:text-primary transition-colors">Settings</span>
+</a>
+</div>
+</nav>
+</aside>
+<!-- Main Content Wrapper -->
+<div class="flex-1 flex flex-col md:ml-[280px] w-full h-full">
+<!-- TopAppBar (Shared Component) -->
+<header class="flex justify-between items-center w-full px-margin-desktop py-sm h-16 bg-surface border-b border-outline-variant docked full-width top-0 sticky z-50">
+<!-- Search Bar (Left) -->
+<div class="flex items-center relative w-64">
+<span class="material-symbols-outlined absolute left-3 text-on-surface-variant" data-icon="search">search</span>
+<input class="w-full bg-surface-container pl-10 pr-4 py-2 rounded-lg border border-transparent focus:border-secondary focus:bg-surface-container-lowest outline-none font-body-sm text-body-sm text-primary transition-all placeholder:text-on-surface-variant" placeholder="Search..." type="text"/>
+</div>
+<!-- Actions (Right) -->
+<div class="flex items-center gap-md">
+<button class="w-10 h-10 rounded-full flex items-center justify-center text-on-surface-variant hover:bg-surface-container transition-colors duration-200 relative group">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+<span class="absolute top-2 right-2 w-2 h-2 bg-error rounded-full"></span>
+</button>
+<button class="w-10 h-10 rounded-full flex items-center justify-center text-on-surface-variant hover:bg-surface-container transition-colors duration-200">
+<span class="material-symbols-outlined" data-icon="help">help</span>
+</button>
+<div class="h-6 w-px bg-outline-variant mx-2"></div>
+<button class="font-body-sm text-body-sm font-medium text-on-surface-variant hover:text-primary transition-colors px-3 py-2">Support</button>
+<button class="font-body-sm text-body-sm font-medium bg-primary text-on-primary px-4 py-2 rounded-lg hover:bg-primary-fixed hover:text-on-primary-fixed transition-colors">Add Expense</button>
+<button class="ml-2 w-8 h-8 rounded-full bg-surface-variant overflow-hidden border border-outline-variant hover:border-secondary transition-colors">
+<img alt="User profile" class="w-full h-full object-cover" data-alt="Close up portrait photo of a professional corporate user in bright neutral lighting, exuding trust and confidence." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB6tF9UUBUFL-HmyClkkTva2HMur5C4wMgLO7LnEOX-R0aaQjbE1PYXpkdiNSx6AeMt0DTsn_C91vq3JS44Pb4NBxHtht3TmOcFUnsdfdMZe8AMe7zW0VN0x8EEeNS8WWT6kgqFCJhau0FmVIf39ps3A9OAXOACMLMOrKLxFoqw5DFQoo7rTftDHGaTIP9xxgEJ87NFsYGue0fKqebtBRucrBUAHurbYgEc1bRIRYlz0ZYNgdf8g5QxUD5GwfBZivKdUfSIJF-eIBA"/>
+</button>
+</div>
+</header>
+<!-- Main Content Area -->
+<main class="flex-1 overflow-y-auto bg-background p-margin-mobile md:p-margin-desktop">
+<div class="max-w-4xl mx-auto w-full">
+<!-- Page Header -->
+<div class="mb-xl">
+<h1 class="font-headline-lg text-headline-lg text-primary mb-2">Record Transaction</h1>
+<p class="font-body-md text-body-md text-on-surface-variant">Enter the details below to manually record a new expense.</p>
+</div>
+<!-- Form Card -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-lg ambient-shadow">
+<form action="#" class="space-y-xl" method="POST">
+<!-- Top Row: Amount & Date -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-gutter">
+<!-- Amount Field -->
+<div class="space-y-sm">
+<label class="block font-label-caps text-label-caps text-on-surface-variant" for="amount">Amount</label>
+<div class="relative flex items-center">
+<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+<span class="font-data-mono text-data-mono text-on-surface-variant">$</span>
+</div>
+<input class="block w-full pl-8 pr-12 py-3 bg-surface-container-lowest border border-outline-variant rounded-lg font-data-mono text-data-mono text-primary text-lg focus:ring-2 focus:ring-secondary/20 focus:border-secondary outline-none transition-all placeholder:text-outline" id="amount" name="amount" placeholder="0.00" required="" step="0.01" type="number"/>
+<div class="absolute inset-y-0 right-0 flex items-center">
+<select class="h-full py-0 pl-2 pr-7 border-transparent bg-transparent text-on-surface-variant font-body-sm text-body-sm focus:ring-0 rounded-r-lg outline-none cursor-pointer" id="currency" name="currency">
+<option>USD</option>
+<option>EUR</option>
+<option>GBP</option>
+</select>
+</div>
+</div>
+</div>
+<!-- Date Field -->
+<div class="space-y-sm">
+<label class="block font-label-caps text-label-caps text-on-surface-variant" for="date">Transaction Date</label>
+<div class="relative">
+<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="calendar_today">calendar_today</span>
+</div>
+<input class="block w-full pl-10 pr-3 py-3 bg-surface-container-lowest border border-outline-variant rounded-lg font-body-md text-body-md text-primary focus:ring-2 focus:ring-secondary/20 focus:border-secondary outline-none transition-all" id="date" name="date" required="" type="date"/>
+</div>
+</div>
+</div>
+<!-- Second Row: Category & Payment Mode -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-gutter">
+<!-- Category Field -->
+<div class="space-y-sm">
+<label class="block font-label-caps text-label-caps text-on-surface-variant" for="category">Category</label>
+<div class="relative">
+<select class="block w-full pl-3 pr-10 py-3 bg-surface-container-lowest border border-outline-variant rounded-lg font-body-md text-body-md text-primary appearance-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary outline-none transition-all cursor-pointer" id="category" name="category">
+<option disabled="" selected="" value="">Select a category</option>
+<option value="software">Software &amp; Subscriptions</option>
+<option value="travel">Travel &amp; Transit</option>
+<option value="meals">Meals &amp; Entertainment</option>
+<option value="office">Office Supplies</option>
+<option value="marketing">Marketing</option>
+</select>
+<div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-on-surface-variant">
+<span class="material-symbols-outlined" data-icon="expand_more">expand_more</span>
+</div>
+</div>
+</div>
+<!-- Payment Mode Field -->
+<div class="space-y-sm">
+<label class="block font-label-caps text-label-caps text-on-surface-variant" for="payment_mode">Payment Mode</label>
+<div class="flex gap-sm">
+<label class="flex-1 relative cursor-pointer group">
+<input checked="" class="peer sr-only" name="payment_mode" type="radio" value="card"/>
+<div class="w-full text-center py-2 px-3 border border-outline-variant rounded-lg font-body-sm text-body-sm text-on-surface-variant peer-checked:border-secondary peer-checked:bg-secondary-fixed/20 peer-checked:text-secondary hover:bg-surface-container transition-all">
+<span class="material-symbols-outlined block mb-1 text-[20px]" data-icon="credit_card">credit_card</span>
+                                            Card
+                                        </div>
+</label>
+<label class="flex-1 relative cursor-pointer group">
+<input class="peer sr-only" name="payment_mode" type="radio" value="cash"/>
+<div class="w-full text-center py-2 px-3 border border-outline-variant rounded-lg font-body-sm text-body-sm text-on-surface-variant peer-checked:border-secondary peer-checked:bg-secondary-fixed/20 peer-checked:text-secondary hover:bg-surface-container transition-all">
+<span class="material-symbols-outlined block mb-1 text-[20px]" data-icon="payments">payments</span>
+                                            Cash
+                                        </div>
+</label>
+<label class="flex-1 relative cursor-pointer group">
+<input class="peer sr-only" name="payment_mode" type="radio" value="upi"/>
+<div class="w-full text-center py-2 px-3 border border-outline-variant rounded-lg font-body-sm text-body-sm text-on-surface-variant peer-checked:border-secondary peer-checked:bg-secondary-fixed/20 peer-checked:text-secondary hover:bg-surface-container transition-all">
+<span class="material-symbols-outlined block mb-1 text-[20px]" data-icon="qr_code_scanner">qr_code_scanner</span>
+                                            Transfer
+                                        </div>
+</label>
+</div>
+</div>
+</div>
+<!-- Description Field -->
+<div class="space-y-sm">
+<label class="block font-label-caps text-label-caps text-on-surface-variant" for="description">Description &amp; Notes <span class="font-normal normal-case text-outline ml-1">(Optional)</span></label>
+<textarea class="block w-full p-3 bg-surface-container-lowest border border-outline-variant rounded-lg font-body-md text-body-md text-primary focus:ring-2 focus:ring-secondary/20 focus:border-secondary outline-none transition-all placeholder:text-outline" id="description" name="description" placeholder="Brief details about this expense..." rows="3"></textarea>
+</div>
+<!-- Receipt Upload Area (Extra Value Add based on "Precision Finance" style) -->
+<div class="space-y-sm">
+<label class="block font-label-caps text-label-caps text-on-surface-variant">Attachment</label>
+<div class="w-full border-2 border-dashed border-outline-variant rounded-xl p-lg flex flex-col items-center justify-center text-center hover:bg-surface-container-lowest hover:border-secondary transition-all cursor-pointer group bg-surface">
+<div class="w-12 h-12 rounded-full bg-surface-container-highest flex items-center justify-center mb-3 group-hover:bg-secondary-fixed/30 transition-colors">
+<span class="material-symbols-outlined text-on-surface-variant group-hover:text-secondary transition-colors" data-icon="upload_file">upload_file</span>
+</div>
+<span class="font-body-md text-body-md text-primary font-medium">Click to upload receipt</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant mt-1">SVG, PNG, JPG or PDF (max. 5MB)</span>
+</div>
+</div>
+<!-- Divider -->
+<hr class="border-outline-variant/50"/>
+<!-- Action Buttons -->
+<div class="flex items-center justify-end gap-md pt-2">
+<button class="font-body-md text-body-md font-medium text-primary px-6 py-2.5 rounded-lg hover:bg-surface-container transition-colors outline-none focus:ring-2 focus:ring-outline-variant" type="button">
+                                Cancel
+                            </button>
+<button class="font-body-md text-body-md font-semibold bg-secondary text-on-secondary px-8 py-2.5 rounded-lg hover:bg-secondary-container hover:text-on-secondary-container hover:shadow-md transition-all outline-none focus:ring-2 focus:ring-offset-2 focus:ring-secondary flex items-center gap-2" type="submit">
+<span class="material-symbols-outlined text-[20px]" data-icon="save">save</span>
+                                Save Expense
+                            </button>
+</div>
+</form>
+</div>
+</div>
+<!-- Bottom Spacing -->
+<div class="h-xl"></div>
+</main>
+</div>
+<script>
+        // Set today's date as default
+        document.getElementById('date').valueAsDate = new Date();
+    </script>
+</body></html>
