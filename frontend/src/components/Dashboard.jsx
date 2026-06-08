@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { fetchAnalytics, fetchTransactions } from '../api';
+import { fetchAnalytics, fetchTransactions, fetchTodayAnalytics } from '../api';
 import TopBar from './TopBar';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
@@ -36,22 +36,27 @@ function getPaymentModeIcon(mode) {
 }
 
 let cachedAnalytics = null;
-let cachedTransactions = null;
+let cachedTodayAnalytics = null;
+// NOTE: transactions are NOT cached so the list is always fresh (shows today's expenses)
 
 export default function Dashboard() {
   const [analytics, setAnalytics] = useState(cachedAnalytics);
-  const [transactions, setTransactions] = useState(cachedTransactions || []);
+  const [transactions, setTransactions] = useState([]);
+  const [todayAnalytics, setTodayAnalytics] = useState(cachedTodayAnalytics);
   const [loading, setLoading] = useState(!cachedAnalytics);
   const navigate = useNavigate();
 
   useEffect(() => {
     const load = async () => {
       try {
-        const [a, t] = await Promise.all([fetchAnalytics(), fetchTransactions()]);
+        const [a, t, td] = await Promise.all([fetchAnalytics(), fetchTransactions(), fetchTodayAnalytics()]);
         cachedAnalytics = a;
-        cachedTransactions = t;
+        cachedTodayAnalytics = td;
         setAnalytics(a);
-        setTransactions(t);
+        // Sort newest-first as a client-side safety net
+        const sorted = [...t].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+        setTransactions(sorted);
+        setTodayAnalytics(td);
       } catch (err) {
         console.error('Failed to load dashboard data:', err);
       } finally {
@@ -107,6 +112,13 @@ export default function Dashboard() {
     );
   }
 
+  // Derive today's metrics
+  const todayTotal = todayAnalytics?.total_spent || 0;
+  const todayCount = todayAnalytics?.transaction_count || 0;
+  const todayByCategory = todayAnalytics?.by_category || {};
+  const todayCategoryEntries = Object.entries(todayByCategory).sort((a, b) => b[1] - a[1]);
+  const todayTopCategory = todayCategoryEntries[0];
+
   return (
     <>
       <TopBar title="Dashboard" />
@@ -139,7 +151,7 @@ export default function Dashboard() {
               </div>
               <div>
                 <div className="font-data-mono text-[32px] font-bold text-on-surface" style={{ fontSize: '32px', lineHeight: '40px' }}>
-                  ${totalSpent.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  ₹{totalSpent.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </div>
                 <div className="text-body-sm text-on-surface-variant mt-1">All time</div>
               </div>
@@ -155,7 +167,7 @@ export default function Dashboard() {
               </div>
               <div>
                 <div className="font-data-mono text-[32px] font-bold text-on-surface" style={{ fontSize: '32px', lineHeight: '40px' }}>
-                  ${monthData.length > 0 ? monthData[monthData.length - 1].amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0.00'}
+                  ₹{monthData.length > 0 ? monthData[monthData.length - 1].amount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0.00'}
                 </div>
                 <div className="text-body-sm text-on-surface-variant mt-1">Current month</div>
               </div>
@@ -194,10 +206,118 @@ export default function Dashboard() {
                   {topCategoryName}
                 </div>
                 <div className="text-body-sm text-on-surface-variant mt-1 font-data-mono">
-                  ${topCategoryAmount.toFixed(2)} ({topCategoryPct}%)
+                  ₹{topCategoryAmount.toFixed(2)} ({topCategoryPct}%)
                 </div>
               </div>
             </div>
+          </div>
+
+          {/* ───── Today's Spending Analysis ───── */}
+          <div className="bg-surface-container-lowest rounded-xl border border-outline-variant/30 shadow-sm overflow-hidden">
+            {/* Header */}
+            <div className="px-lg pt-lg pb-md flex items-center justify-between border-b border-outline-variant/20">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-full bg-secondary/10 flex items-center justify-center">
+                  <span className="material-symbols-outlined text-secondary text-[20px]">today</span>
+                </div>
+                <div>
+                  <h3 className="text-[18px] font-semibold text-on-surface" style={{ fontFamily: 'Inter' }}>
+                    Today's Spending Analysis
+                  </h3>
+                  <p className="text-body-sm text-on-surface-variant">
+                    {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
+                  </p>
+                </div>
+              </div>
+              {/* Today total pill */}
+              <div className="flex items-center gap-2 bg-secondary/8 border border-secondary/20 px-4 py-2 rounded-full">
+                <span className="material-symbols-outlined text-secondary text-[18px]">payments</span>
+                <span className="font-data-mono font-bold text-secondary text-[18px]">
+                  ₹{todayTotal.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                </span>
+                <span className="text-body-sm text-on-surface-variant ml-1">
+                  · {todayCount} {todayCount === 1 ? 'transaction' : 'transactions'}
+                </span>
+              </div>
+            </div>
+
+            {/* Body */}
+            {todayCount === 0 ? (
+              <div className="flex flex-col items-center justify-center py-10 gap-3 text-on-surface-variant">
+                <span className="material-symbols-outlined text-[48px] opacity-30">receipt_long</span>
+                <p className="text-body-md font-medium">No expenses recorded today</p>
+                <button
+                  onClick={() => navigate('/add-expense')}
+                  className="mt-1 text-body-sm text-secondary font-semibold flex items-center gap-1 hover:underline"
+                >
+                  <span className="material-symbols-outlined text-[16px]">add_circle</span>
+                  Add your first expense today
+                </button>
+              </div>
+            ) : (
+              <div className="p-lg grid grid-cols-1 md:grid-cols-2 gap-gutter">
+                {/* Left – Category mini breakdown */}
+                <div>
+                  <p className="text-label-caps text-on-surface-variant mb-3">BY CATEGORY TODAY</p>
+                  <div className="space-y-2">
+                    {todayCategoryEntries.map(([cat, amt], idx) => {
+                      const pct = todayTotal > 0 ? Math.round((amt / todayTotal) * 100) : 0;
+                      return (
+                        <div key={cat} className="flex items-center gap-3">
+                          <div
+                            className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+                            style={{ backgroundColor: `${CATEGORY_COLORS[idx % CATEGORY_COLORS.length]}18`, color: CATEGORY_COLORS[idx % CATEGORY_COLORS.length] }}
+                          >
+                            <span className="material-symbols-outlined text-[16px]">{getCategoryIcon(cat)}</span>
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex justify-between items-center mb-1">
+                              <span className="text-body-sm font-medium text-on-surface truncate">{cat}</span>
+                              <span className="font-data-mono text-[13px] text-on-surface ml-2 flex-shrink-0">
+                                ₹{amt.toFixed(2)}
+                              </span>
+                            </div>
+                            <div className="h-1.5 bg-surface-container-high rounded-full overflow-hidden">
+                              <div
+                                className="h-full rounded-full transition-all duration-500"
+                                style={{ width: `${pct}%`, backgroundColor: CATEGORY_COLORS[idx % CATEGORY_COLORS.length] }}
+                              />
+                            </div>
+                          </div>
+                          <span className="text-[11px] font-bold text-on-surface-variant w-8 text-right flex-shrink-0">{pct}%</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Right – Stats */}
+                <div className="grid grid-cols-2 gap-3 content-start">
+                  <div className="bg-surface-container-low rounded-xl p-4 border border-outline-variant/20 flex flex-col gap-1">
+                    <span className="text-label-caps text-on-surface-variant">Today's Total</span>
+                    <span className="font-data-mono font-bold text-on-surface text-[22px]">
+                      ₹{todayTotal.toFixed(2)}
+                    </span>
+                  </div>
+                  <div className="bg-surface-container-low rounded-xl p-4 border border-outline-variant/20 flex flex-col gap-1">
+                    <span className="text-label-caps text-on-surface-variant">Transactions</span>
+                    <span className="font-data-mono font-bold text-on-surface text-[22px]">{todayCount}</span>
+                  </div>
+                  <div className="bg-surface-container-low rounded-xl p-4 border border-outline-variant/20 flex flex-col gap-1">
+                    <span className="text-label-caps text-on-surface-variant">Avg per Txn</span>
+                    <span className="font-data-mono font-bold text-on-surface text-[22px]">
+                      ₹{todayCount > 0 ? (todayTotal / todayCount).toFixed(2) : '0.00'}
+                    </span>
+                  </div>
+                  <div className="bg-surface-container-low rounded-xl p-4 border border-outline-variant/20 flex flex-col gap-1">
+                    <span className="text-label-caps text-on-surface-variant">Top Category</span>
+                    <span className="font-semibold text-on-surface text-[15px] truncate">
+                      {todayTopCategory ? todayTopCategory[0] : '—'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Charts Section */}
@@ -221,9 +341,9 @@ export default function Dashboard() {
                   <BarChart data={monthData} barCategoryGap="20%">
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#c6c6cd33" />
                     <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#45464d', fontSize: 12, fontWeight: 700, letterSpacing: '0.05em' }} />
-                    <YAxis axisLine={false} tickLine={false} tick={{ fill: '#45464d', fontSize: 12 }} tickFormatter={(v) => `$${v}`} />
+                    <YAxis axisLine={false} tickLine={false} tick={{ fill: '#45464d', fontSize: 12 }} tickFormatter={(v) => `₹${v}`} />
                     <Tooltip
-                      formatter={(v) => [`$${v.toFixed(2)}`, 'Amount']}
+                      formatter={(v) => [`₹${v.toFixed(2)}`, 'Amount']}
                       contentStyle={{ borderRadius: '8px', border: '1px solid #c6c6cd', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)', fontFamily: 'JetBrains Mono' }}
                     />
                     <Bar dataKey="amount" fill="#316bf3" radius={[4, 4, 0, 0]} />
@@ -258,7 +378,7 @@ export default function Dashboard() {
                           <Cell key={`cell-${index}`} fill={CATEGORY_COLORS[index % CATEGORY_COLORS.length]} />
                         ))}
                       </Pie>
-                      <Tooltip formatter={(v) => `$${v.toFixed(2)}`} contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)', fontFamily: 'JetBrains Mono' }} />
+                      <Tooltip formatter={(v) => `₹${v.toFixed(2)}`} contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)', fontFamily: 'JetBrains Mono' }} />
                     </PieChart>
                   </ResponsiveContainer>
                 </div>
@@ -322,7 +442,7 @@ export default function Dashboard() {
                           {new Date(txn.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                         </td>
                         <td className="py-4 px-6 text-right font-data-mono font-medium text-on-surface">
-                          -${txn.amount?.toFixed(2)}
+                          -₹{txn.amount?.toFixed(2)}
                         </td>
                       </tr>
                     ))}
@@ -359,7 +479,7 @@ export default function Dashboard() {
                           <div className="text-on-surface-variant text-body-sm">{pct}% of total</div>
                         </div>
                         <div className="font-data-mono font-bold text-on-surface text-lg">
-                          ${mode.value.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                          ₹{mode.value.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                         </div>
                       </div>
                     );

@@ -70,7 +70,7 @@ def get_transactions(
         except ValueError:
             raise HTTPException(status_code=400, detail="Invalid to_date format. Use YYYY-MM-DD")
             
-    return query.all()
+    return query.order_by(Transaction.created_at.desc()).all()
 
 @router.put("/{id}", response_model=TransactionResponse)
 def update_transaction(id: int, txn_update: TransactionUpdate, db: Session = Depends(get_db)):

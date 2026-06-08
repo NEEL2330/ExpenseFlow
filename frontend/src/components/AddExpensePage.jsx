@@ -52,7 +52,7 @@ export default function AddExpensePage() {
 
     try {
       await axios.post('/api/transactions/', {
-        telegram_user_id: 'dashboard_user',
+        telegram_user_id: import.meta.env.VITE_TELEGRAM_USER_ID || '',
         amount: parseFloat(amount),
         category: finalCategory,
         payment_mode: paymentMode,
@@ -92,7 +92,7 @@ export default function AddExpensePage() {
                   <label className="block text-label-caps text-on-surface-variant" htmlFor="amount">Amount</label>
                   <div className="relative flex items-center">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <span className="font-data-mono text-on-surface-variant">$</span>
+                      <span className="font-data-mono text-on-surface-variant">₹</span>
                     </div>
                     <input
                       id="amount"
@@ -107,9 +107,7 @@ export default function AddExpensePage() {
                     />
                     <div className="absolute inset-y-0 right-0 flex items-center">
                       <select className="h-full py-0 pl-2 pr-7 border-transparent bg-transparent text-on-surface-variant text-body-sm focus:ring-0 rounded-r-lg outline-none cursor-pointer">
-                        <option>USD</option>
-                        <option>EUR</option>
-                        <option>GBP</option>
+                        <option>INR</option>
                       </select>
                     </div>
                   </div>

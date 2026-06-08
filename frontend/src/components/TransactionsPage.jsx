@@ -190,7 +190,7 @@ export default function TransactionsPage() {
                       {txn.payment_mode || 'Unknown'}
                     </td>
                     <td className="py-3 px-4 font-data-mono text-on-surface text-right whitespace-nowrap">
-                      -${txn.amount?.toFixed(2)}
+                      -₹{txn.amount?.toFixed(2)}
                     </td>
                     <td className="py-3 px-4 text-center">
                       <div className="flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">

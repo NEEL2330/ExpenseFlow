@@ -1,3 +1,18 @@
 # Stitch UI Design Exports
 stitch_expenseflow_web_dashboard/
 design.txt
+
+# Environments and Secrets
+.env
+.env.*
+!.env.example
+
+# Node
+node_modules/
+dist/
+
+# Python
+venv/
+__pycache__/
+*.pyc
+*.pyo

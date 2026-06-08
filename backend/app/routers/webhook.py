@@ -193,7 +193,7 @@ def receive_n8n_webhook(payload: N8nWebhookPayload, db: Session = Depends(get_db
 
         # Save pending record
         pending_record = PendingExpense(
-            telegram_user_id=user_id,
+            telegram_user_id=telegram_id,
             raw_message=text,
             amount=parsed["amount"],
             payment_mode=parsed["payment_mode"],
