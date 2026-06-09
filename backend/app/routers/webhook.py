@@ -6,7 +6,7 @@ from sqlalchemy import distinct
 
 from app.database import get_db
 from app.schemas import N8nWebhookPayload
-from app.models import Transaction, PendingExpense, User
+from app.models import Transaction, PendingExpense, User, LinkToken
 from app.parser import parse_expense
 
 router = APIRouter(prefix="/api/webhooks", tags=["webhooks"])
@@ -102,6 +102,20 @@ def _get_active_pending(db: Session, telegram_user_id: str):
 def receive_n8n_webhook(payload: N8nWebhookPayload, db: Session = Depends(get_db)):
     telegram_id = str(payload.telegram_user_id)
     text        = payload.message_text.strip()
+    
+    # ── Handle deep linking `/start <token>` ──
+    if text.startswith("/start "):
+        link_token_str = text.split(" ", 1)[1].strip()
+        if link_token_str:
+            token_record = db.query(LinkToken).filter(LinkToken.token == link_token_str).first()
+            if token_record and token_record.status == "pending" and datetime.utcnow() <= token_record.expires_at:
+                token_record.telegram_id = telegram_id
+                token_record.telegram_username = payload.username
+                token_record.status = "linked"
+                db.commit()
+                return {"reply": "✅ Your Telegram account has been linked successfully! Please return to the ExpenseFlow website to complete your registration."}
+            else:
+                return {"reply": "❌ The link token is invalid or has expired. Please generate a new one from the ExpenseFlow website."}
 
     # Prefer first_name (always set by Telegram); fall back to @username handle
     display_name = payload.first_name or payload.username

@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import { createTransaction } from '../api';
 import { fetchAnalytics } from '../api';
+import { useAuth } from '../context/AuthContext';
 import TopBar from './TopBar';
 
 export default function AddExpensePage() {
+  const { user } = useAuth();
   const navigate = useNavigate();
   const [amount, setAmount] = useState('');
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
@@ -19,7 +21,8 @@ export default function AddExpensePage() {
   const [newCategoryName, setNewCategoryName] = useState('');
 
   useEffect(() => {
-    const saved = localStorage.getItem('customCategories');
+    if (!user) return;
+    const saved = localStorage.getItem(`customCategories_${user.username}`);
     if (saved) {
       try {
         setCustomCategories(JSON.parse(saved));
@@ -47,17 +50,18 @@ export default function AddExpensePage() {
     
     if (isCreatingCategory && finalCategory) {
       const updated = Array.from(new Set([...customCategories, finalCategory]));
-      localStorage.setItem('customCategories', JSON.stringify(updated));
+      localStorage.setItem(`customCategories_${user?.username}`, JSON.stringify(updated));
     }
 
     try {
-      await axios.post('/api/transactions/', {
-        telegram_user_id: import.meta.env.VITE_TELEGRAM_USER_ID || '',
-        amount: parseFloat(amount),
+      await createTransaction({
+        amount: Number(amount),
         category: finalCategory,
         payment_mode: paymentMode,
+        date: date,
+        description: description
       });
-      navigate('/');
+      navigate('/dashboard');
     } catch (err) {
       console.error('Failed to save expense:', err);
       setError('Failed to save expense. Please try again.');
@@ -248,7 +252,7 @@ export default function AddExpensePage() {
               <div className="flex items-center justify-end gap-md pt-2">
                 <button
                   type="button"
-                  onClick={() => navigate('/')}
+                  onClick={() => navigate('/dashboard')}
                   className="text-body-md font-medium text-primary px-6 py-2.5 rounded-lg hover:bg-surface-container transition-colors outline-none"
                 >
                   Cancel

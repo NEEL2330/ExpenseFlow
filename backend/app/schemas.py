@@ -18,11 +18,42 @@ class N8nWebhookPayload(BaseModel):
 
 class UserResponse(BaseModel):
     id: int
-    telegram_id: str
+    telegram_id: Optional[str] = None
+    username: Optional[str] = None
     name: Optional[str] = None
+    telegram_username: Optional[str] = None
     created_at: datetime
 
     model_config = ConfigDict(from_attributes=True)
+
+class GenerateLinkTokenResponse(BaseModel):
+    token: str
+    telegram_link: str
+
+class LinkTelegramRequest(BaseModel):
+    token: str
+    telegram_id: str
+    telegram_username: Optional[str] = None
+
+class LinkStatusResponse(BaseModel):
+    linked: bool
+    telegram_id: Optional[str] = None
+    telegram_username: Optional[str] = None
+
+class RegisterRequest(BaseModel):
+    token: str
+    username: str
+    password: str
+    confirm_password: str
+
+class LoginRequest(BaseModel):
+    username: str
+    password: str
+
+class AuthResponse(BaseModel):
+    access_token: str
+    token_type: str = "bearer"
+    user: UserResponse
 
 class TransactionCreate(BaseModel):
     telegram_user_id: str

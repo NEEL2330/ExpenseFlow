@@ -3,7 +3,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.database import engine, Base
 
-from app.routers import webhook, transactions, analytics, ask_ai
+from app.routers import webhook, transactions, analytics, ask_ai, auth
 
 # Create all tables automatically on startup (since we removed Alembic)
 Base.metadata.create_all(bind=engine)
@@ -18,6 +18,7 @@ app.include_router(webhook.router)
 app.include_router(transactions.router)
 app.include_router(analytics.router)
 app.include_router(ask_ai.router)
+app.include_router(auth.router)
 
 # Parse frontend URLs from the environment variable (defaulting to localhost if not set)
 frontend_urls = os.getenv("FRONTEND_URLS", "http://localhost:5173,http://localhost:3000")

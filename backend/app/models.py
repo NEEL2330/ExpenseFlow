@@ -7,10 +7,13 @@ from app.database import Base
 class User(Base):
     __tablename__ = "users"
 
-    id          = Column(Integer, primary_key=True, index=True)
-    telegram_id = Column(String(50), unique=True, index=True)
-    name        = Column(String(100), nullable=True)
-    created_at  = Column(DateTime, default=datetime.utcnow)
+    id                = Column(Integer, primary_key=True, index=True)
+    telegram_id       = Column(String(50), unique=True, index=True, nullable=True) # Now nullable because standard user could be created before linking? Wait, standard user MUST link telegram first.
+    username          = Column(String(100), unique=True, index=True, nullable=True)
+    password_hash     = Column(String(255), nullable=True)
+    telegram_username = Column(String(100), nullable=True)
+    name              = Column(String(100), nullable=True)
+    created_at        = Column(DateTime, default=datetime.utcnow)
 
     transactions = relationship("Transaction", back_populates="user")
 
@@ -57,3 +60,14 @@ class PendingExpense(Base):
     created_at       = Column(DateTime, default=datetime.utcnow)
     # Row is invalid after this timestamp — hard expiry at 5 minutes
     expires_at       = Column(DateTime, nullable=False)
+
+class LinkToken(Base):
+    __tablename__ = "link_tokens"
+
+    id                = Column(Integer, primary_key=True, index=True)
+    token             = Column(String(100), unique=True, index=True, nullable=False)
+    telegram_id       = Column(String(50), nullable=True)
+    telegram_username = Column(String(100), nullable=True)
+    status            = Column(String(20), default="pending")  # pending | linked
+    created_at        = Column(DateTime, default=datetime.utcnow)
+    expires_at        = Column(DateTime, nullable=False)

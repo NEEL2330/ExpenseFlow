@@ -214,9 +214,6 @@ export default function ReportsPage() {
               <div>
                 <h3 className="text-label-caps text-on-surface-variant mb-sm">Top Spending Category</h3>
                 <div className="flex items-center gap-sm mb-md">
-                  <div className="w-12 h-12 rounded-full bg-secondary-fixed flex items-center justify-center text-secondary">
-                    <span className="material-symbols-outlined">flight</span>
-                  </div>
                   <div>
                     <h4 className="text-headline-md text-primary">{topCatName}</h4>
                     <p className="text-body-sm text-on-surface-variant">{topCatPct}% of total expenses</p>

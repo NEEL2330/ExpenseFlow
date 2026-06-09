@@ -1,44 +1,34 @@
 import React, { useState, useEffect } from 'react';
 import { fetchAnalytics } from '../api';
+import { useAuth } from '../context/AuthContext';
 import TopBar from './TopBar';
+const CARD_THEMES = [
+  { bg: 'bg-[#ffe1df]', text: 'text-[#8c1d18]', circle: 'bg-[#8c1d18]/10' }, // Pink
+  { bg: 'bg-[#34d399]', text: 'text-[#064e3b]', circle: 'bg-[#064e3b]/10' }, // Green
+  { bg: 'bg-[#e0e7ff]', text: 'text-[#312e81]', circle: 'bg-[#312e81]/10' }, // Blue
+  { bg: 'bg-[#fef08a]', text: 'text-[#78350f]', circle: 'bg-[#78350f]/10' }, // Yellow
+  { bg: 'bg-[#f3e8ff]', text: 'text-[#4c1d95]', circle: 'bg-[#4c1d95]/10' }, // Purple
+  { bg: 'bg-[#ffedd5]', text: 'text-[#7c2d12]', circle: 'bg-[#7c2d12]/10' }, // Orange
+];
 
-const CATEGORY_COLORS = {
-  'Food': 'bg-secondary-fixed text-on-secondary-fixed',
-  'Food & Dining': 'bg-secondary-fixed text-on-secondary-fixed',
-  'Transport': 'bg-error-container text-on-error-container',
-  'Transportation': 'bg-error-container text-on-error-container',
-  'Shopping': 'bg-surface-variant text-on-surface-variant',
-  'Utilities': 'bg-surface-variant text-on-surface-variant',
-  'Entertainment': 'bg-primary-fixed text-on-primary-fixed',
-  'Other': 'bg-surface-variant text-on-surface-variant',
-};
-
-const CATEGORY_ICONS = {
-  'Food': 'restaurant',
-  'Food & Dining': 'restaurant',
-  'Transport': 'local_taxi',
-  'Transportation': 'local_taxi',
-  'Shopping': 'shopping_bag',
-  'Utilities': 'bolt',
-  'Entertainment': 'movie',
-  'Other': 'more_horiz',
-};
-
-function getCategoryIcon(category) {
-  return CATEGORY_ICONS[category] || 'category';
-}
-
-function getCategoryColor(category) {
-  return CATEGORY_COLORS[category] || 'bg-surface-container-high text-on-surface-variant';
+function getCategoryTheme(categoryName) {
+  let hash = 0;
+  for (let i = 0; i < categoryName.length; i++) {
+    hash = categoryName.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  const index = Math.abs(hash) % CARD_THEMES.length;
+  return CARD_THEMES[index];
 }
 
 export default function CategoriesPage() {
+  const { user } = useAuth();
   const [analytics, setAnalytics] = useState(null);
   const [loading, setLoading] = useState(true);
   const [customCategories, setCustomCategories] = useState([]);
 
   useEffect(() => {
-    const saved = localStorage.getItem('customCategories');
+    if (!user) return;
+    const saved = localStorage.getItem(`customCategories_${user.username}`);
     if (saved) {
       try {
         setCustomCategories(JSON.parse(saved));
@@ -79,9 +69,15 @@ export default function CategoriesPage() {
       <main className="flex-1 p-margin-mobile md:p-margin-desktop overflow-y-auto bg-background">
         <div className="max-w-7xl mx-auto">
           {/* Page Header */}
-          <div className="mb-xl">
-            <h2 className="text-headline-lg text-on-surface">Categories Overview</h2>
-            <p className="text-body-md text-on-surface-variant mt-xs">Breakdown of your spending across different categories.</p>
+          <div className="mb-xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div>
+              <h2 className="text-[28px] font-bold text-on-surface leading-tight">Categories Overview</h2>
+              <p className="text-body-md text-on-surface-variant mt-1">Organize and review your spending across different categories.</p>
+            </div>
+            <button className="bg-[#2563eb] text-white px-5 py-2.5 rounded-xl font-medium flex items-center gap-2 hover:bg-blue-700 transition-colors shadow-sm">
+              <span className="material-symbols-outlined text-[20px]">add</span>
+              Add Category
+            </button>
           </div>
 
           {loading ? (
@@ -95,30 +91,39 @@ export default function CategoriesPage() {
                   No categories found. Start by adding some expenses!
                 </div>
               ) : (
-                categoryData.map((cat) => {
-                  const pct = totalSpent > 0 ? Math.round((cat.value / totalSpent) * 100) : 0;
+                <>
+                  {categoryData.map((cat) => {
+                    const pct = totalSpent > 0 ? Math.round((cat.value / totalSpent) * 100) : 0;
+                    const theme = getCategoryTheme(cat.name);
+                    
+                    return (
+                      <div key={cat.name} className={`relative overflow-hidden rounded-[20px] p-6 h-[180px] flex flex-col justify-between transition-transform hover:scale-[1.02] cursor-pointer ${theme.bg} ${theme.text}`}>
+                        {/* Top Right: Percentage */}
+                        <div className="flex flex-col items-end relative z-10">
+                          <span className="text-[10px] font-bold tracking-widest uppercase opacity-80 mb-0.5">Percentage</span>
+                          <span className="text-[32px] leading-none font-bold">{pct}%</span>
+                        </div>
+                        
+                        {/* Bottom Left: Info */}
+                        <div className="relative z-10">
+                          <h3 className="text-[20px] font-bold mb-1">{cat.name}</h3>
+                          <p className="text-[17px] opacity-90 font-medium">
+                            ${cat.value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                          </p>
+                        </div>
+
+                        {/* Decorative Circle */}
+                        <div className={`absolute -bottom-10 -right-10 w-36 h-36 rounded-full ${theme.circle}`}></div>
+                      </div>
+                    );
+                  })}
                   
-                  return (
-                    <div key={cat.name} className="bg-surface-container-lowest border border-outline-variant/30 rounded-xl p-lg shadow-sm hover:shadow-md transition-all flex flex-col justify-between h-[180px]">
-                      <div className="flex justify-between items-start mb-4">
-                        <div className={`w-12 h-12 rounded-full flex items-center justify-center ${getCategoryColor(cat.name)}`}>
-                          <span className="material-symbols-outlined text-[24px]">{getCategoryIcon(cat.name)}</span>
-                        </div>
-                        <div className="text-right">
-                          <span className="text-label-caps text-on-surface-variant block mb-1">Percentage</span>
-                          <span className="font-data-mono font-bold text-on-surface text-lg">{pct}%</span>
-                        </div>
-                      </div>
-                      
-                      <div>
-                        <h3 className="text-headline-md text-on-surface truncate mb-1">{cat.name}</h3>
-                        <p className="font-data-mono text-body-lg text-secondary font-medium">
-                          ${cat.value.toLocaleString('en-US', { minimumFractionDigits: 2 })}
-                        </p>
-                      </div>
-                    </div>
-                  );
-                })
+                  {/* Manage Categories Card */}
+                  <div className="border-2 border-dashed border-outline-variant/60 rounded-[20px] h-[180px] flex flex-col items-center justify-center text-on-surface-variant hover:bg-surface-container-lowest hover:border-[#2563eb] hover:text-[#2563eb] transition-colors cursor-pointer group">
+                    <span className="material-symbols-outlined text-[28px] mb-3 transition-colors">add</span>
+                    <span className="font-semibold text-sm transition-colors">Manage Categories</span>
+                  </div>
+                </>
               )}
             </div>
           )}

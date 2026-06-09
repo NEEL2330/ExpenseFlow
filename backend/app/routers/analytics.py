@@ -5,6 +5,7 @@ from typing import Optional
 from datetime import datetime
 
 from app.database import get_db
+from app.deps import get_current_user
 from app.models import Transaction, User
 from app.schemas import AnalyticsResponse
 
@@ -12,18 +13,12 @@ router = APIRouter(prefix="/api/analytics", tags=["analytics"])
 
 @router.get("/", response_model=AnalyticsResponse)
 def get_analytics(
-    user_id: Optional[str] = Query(None, description="Telegram User ID or Internal User ID"),
     from_date: Optional[str] = Query(None, alias="from", description="YYYY-MM-DD"),
     to_date: Optional[str] = Query(None, alias="to", description="YYYY-MM-DD"),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
 ):
-    query = db.query(Transaction)
-    
-    if user_id:
-        if user_id.isdigit():
-            query = query.join(User).filter((User.id == int(user_id)) | (User.telegram_id == user_id))
-        else:
-            query = query.join(User).filter(User.telegram_id == user_id)
+    query = db.query(Transaction).filter(Transaction.user_id == current_user.id)
             
     if from_date:
         try:

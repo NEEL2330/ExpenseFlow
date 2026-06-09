@@ -2,19 +2,15 @@ import React from 'react';
 import { NavLink } from 'react-router-dom';
 
 const navItems = [
-  { to: '/', icon: 'dashboard', label: 'Dashboard' },
+  { to: '/dashboard', icon: 'dashboard', label: 'Dashboard' },
   { to: '/transactions', icon: 'receipt_long', label: 'Transactions' },
   { to: '/add-expense', icon: 'add_circle', label: 'Add Expense' },
   { to: '/reports', icon: 'leaderboard', label: 'Reports' },
   { to: '/categories', icon: 'category', label: 'Categories' },
 ];
 
-const bottomItems = [
-  { to: '/profile', icon: 'person', label: 'Profile' },
-  { to: '/settings', icon: 'settings', label: 'Settings' },
-];
-
 export default function Sidebar() {
+
   return (
     <aside className="hidden md:flex flex-col w-[280px] h-screen sticky top-0 left-0 bg-surface-container-lowest border-r border-outline-variant shrink-0 py-md">
       {/* Logo */}
@@ -34,7 +30,7 @@ export default function Sidebar() {
           <NavLink
             key={item.to}
             to={item.to}
-            end={item.to === '/'}
+            end={item.to === '/dashboard'}
             className={({ isActive }) =>
               isActive
                 ? 'flex items-center gap-3 px-4 py-3 bg-primary-fixed text-on-primary-fixed border-l-4 border-secondary font-medium text-body-sm rounded-r-lg transition-transform duration-150'
@@ -55,23 +51,6 @@ export default function Sidebar() {
           </NavLink>
         ))}
 
-        {/* Bottom nav items */}
-        <div className="mt-auto flex flex-col gap-1">
-          {bottomItems.map((item) => (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              className={({ isActive }) =>
-                isActive
-                  ? 'flex items-center gap-3 px-4 py-3 bg-primary-fixed text-on-primary-fixed border-l-4 border-secondary font-medium text-body-sm rounded-r-lg transition-transform duration-150'
-                  : 'flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high text-body-sm rounded-lg transition-all active:scale-[0.98] duration-150'
-              }
-            >
-              <span className="material-symbols-outlined">{item.icon}</span>
-              {item.label}
-            </NavLink>
-          ))}
-        </div>
       </nav>
     </aside>
   );
