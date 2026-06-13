@@ -2,7 +2,7 @@ import axios from 'axios';
 
 const api = axios.create({
   // Use the injected VITE_BACKEND_URL if provided at build time, otherwise fallback to the /api proxy
-  baseURL: import.meta.env.VITE_BACKEND_URL ? `${import.meta.env.VITE_BACKEND_URL}/api` : '/api',
+  baseURL: process.env.VITE_BACKEND_URL ? `${process.env.VITE_BACKEND_URL}/api` : '/api',
 });
 
 // Add interceptor to include JWT token in requests
