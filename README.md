@@ -7,7 +7,7 @@ A modern, AI-powered personal finance assistant that automatically records, cate
 ## ✨ Features
 
 - **🚀 AI-Powered Extraction**: Automatically extracts amount, category, payment method, date, and time from natural language messages.
-- **💬 Chat Integration**: Works seamlessly with Telegram and WhatsApp bots.
+- **💬 Chat Integration**: Works seamlessly with Telegram.
 - **📊 Visual Dashboard**: Beautiful, responsive dashboard with interactive charts and analytics using Recharts.
 - **⚡ Fast Performance**: Vite-powered React frontend and high-performance FastAPI backend.
 - **🗄️ Persistent Storage**: Relational database integration (MySQL/PostgreSQL) with SQLAlchemy ORM.
